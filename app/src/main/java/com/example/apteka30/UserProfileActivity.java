@@ -2,24 +2,20 @@ package com.example.apteka30;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.List;
-
 public class UserProfileActivity extends AppCompatActivity {
 
     private TextView userEmailTextView;
-    private RecyclerView recentlyViewedRecyclerView;
-    private MedicineAdapter adapter;
-    private List<Medicine> recentlyViewedList;
+    private Button logoutButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -27,37 +23,33 @@ public class UserProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_profile);
 
         userEmailTextView = findViewById(R.id.userEmailTextView);
-        recentlyViewedRecyclerView = findViewById(R.id.recentlyViewedRecyclerView);
-        recentlyViewedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        logoutButton = findViewById(R.id.logoutButton);
 
-        // Получение электронной почты текущего пользователя
-        String userEmail = getCurrentUserEmail();
+        // Получаем текущего пользователя Firebase
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Если пользователь авторизован, отображаем его email
+            String userEmail = user.getEmail();
+            userEmailTextView.setText(userEmail);
+        } else {
+            // Если пользователь не авторизован, можете выполнить действия по вашему усмотрению
+            userEmailTextView.setText("User is not logged in");
+        }
 
-        // Установка текста электронной почты пользователя
-        userEmailTextView.setText(userEmail);
-
-        // Получение последних просмотренных лекарств
-        loadRecentlyViewedMedicines();
-
-        Button logoutButton = findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(UserProfileActivity.this, LoginActivity.class));
-            finish();
+        // Устанавливаем обработчик для кнопки выхода
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logout();
+            }
         });
     }
 
-    private String getCurrentUserEmail() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        return (user != null) ? user.getEmail() : "Неизвестный пользователь";
-    }
-
-    private void loadRecentlyViewedMedicines() {
-        MedicineDatabaseHelper dbHelper = new MedicineDatabaseHelper(this);
-        recentlyViewedList = dbHelper.getRecentlyViewedMedicines();
-
-        // Создание и установка адаптера для RecyclerView
-        adapter = new MedicineAdapter(this, recentlyViewedList); // Передаем контекст
-        recentlyViewedRecyclerView.setAdapter(adapter);
+    // Метод для выхода пользователя
+    private void logout() {
+        FirebaseAuth.getInstance().signOut();
+        startActivity(new Intent(UserProfileActivity.this, LoginActivity.class));
+        finish();
     }
 }
+

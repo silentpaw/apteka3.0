@@ -22,6 +22,7 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
 
     // Таблица для последних просмотренных лекарств
     private static final String TABLE_RECENTLY_VIEWED = "recently_viewed";
+    private static final String COLUMN_ID_RECENTLY_VIEWED = "_id"; // Уникальный идентификатор для таблицы "recently_viewed"
     private static final String COLUMN_MEDICINE_ID = "medicine_id";
     private static final int RECENTLY_VIEWED_LIMIT = 3;  // Лимит на количество последних просмотренных лекарств
 
@@ -43,7 +44,7 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_MEDICINE_TABLE);
 
         String CREATE_RECENTLY_VIEWED_TABLE = "CREATE TABLE " + TABLE_RECENTLY_VIEWED + "("
-                + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_ID_RECENTLY_VIEWED + " INTEGER PRIMARY KEY AUTOINCREMENT," // Уникальный идентификатор
                 + COLUMN_MEDICINE_ID + " INTEGER"
                 + ")";
         db.execSQL(CREATE_RECENTLY_VIEWED_TABLE);
@@ -66,22 +67,6 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public Medicine getMedicineById(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_MEDICINE, new String[]{COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_IMAGE_PATH},
-                COLUMN_ID + "=?", new String[]{String.valueOf(id)}, null, null, null);
-        if (cursor != null) {
-            cursor.moveToFirst();
-            Medicine medicine = new Medicine();
-            medicine.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-            medicine.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-            medicine.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIPTION)));
-            medicine.setImagePath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_PATH)));
-            cursor.close();
-            return medicine;
-        }
-        return null;
-    }
 
     public void addRecentlyViewedMedicine(int medicineId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -101,7 +86,7 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_RECENTLY_VIEWED, null, values);
 
         // Удаляем лишние записи, чтобы оставалось только 3 последних просмотренных лекарства
-        String deleteQuery = "DELETE FROM " + TABLE_RECENTLY_VIEWED + " WHERE " + COLUMN_ID + " NOT IN (SELECT " + COLUMN_ID + " FROM " + TABLE_RECENTLY_VIEWED + " ORDER BY " + COLUMN_ID + " DESC LIMIT " + RECENTLY_VIEWED_LIMIT + ")";
+        String deleteQuery = "DELETE FROM " + TABLE_RECENTLY_VIEWED + " WHERE " + COLUMN_ID_RECENTLY_VIEWED + " NOT IN (SELECT " + COLUMN_ID_RECENTLY_VIEWED + " FROM " + TABLE_RECENTLY_VIEWED + " ORDER BY " + COLUMN_ID_RECENTLY_VIEWED + " DESC LIMIT " + RECENTLY_VIEWED_LIMIT + ")";
         db.execSQL(deleteQuery);
 
         cursor.close();
@@ -111,7 +96,7 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
     public List<Medicine> getRecentlyViewedMedicines() {
         List<Medicine> medicines = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_MEDICINE + " WHERE " + COLUMN_ID + " IN (SELECT " + COLUMN_MEDICINE_ID + " FROM " + TABLE_RECENTLY_VIEWED + " ORDER BY " + COLUMN_ID + " DESC)";
+        String query = "SELECT * FROM " + TABLE_MEDICINE + " WHERE " + COLUMN_ID + " IN (SELECT " + COLUMN_MEDICINE_ID + " FROM " + TABLE_RECENTLY_VIEWED + " ORDER BY " + COLUMN_ID_RECENTLY_VIEWED + " DESC)";
         Cursor cursor = db.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
@@ -156,5 +141,25 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_MEDICINE, null, null);
         db.close();
     }
+    public Medicine getMedicineById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_MEDICINE, new String[] {COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_IMAGE_PATH},
+                COLUMN_ID + "=?", new String[] {String.valueOf(id)}, null, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            Medicine medicine = new Medicine();
+            medicine.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
+            medicine.setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
+            medicine.setDescription(cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)));
+            medicine.setImagePath(cursor.getString(cursor.getColumnIndex(COLUMN_IMAGE_PATH)));
+            cursor.close();
+            return medicine;
+        } else {
+            return null;
+        }
+    }
 
 }
+
+

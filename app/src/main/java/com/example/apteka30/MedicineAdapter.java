@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,9 +17,8 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.MedicineViewHolder> {
-
-    private Context context;
     private List<Medicine> medicineList;
+    private Context context;
 
     public MedicineAdapter(Context context, List<Medicine> medicineList) {
         this.context = context;
@@ -28,8 +28,9 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
     @NonNull
     @Override
     public MedicineViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.medicine_item, parent, false);
-        return new MedicineViewHolder(view);
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.medicine_list_item, parent, false);
+        return new MedicineViewHolder(itemView);
     }
 
     @Override
@@ -37,9 +38,15 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
         Medicine medicine = medicineList.get(position);
         holder.nameTextView.setText(medicine.getName());
         holder.descriptionTextView.setText(medicine.getDescription());
-        Picasso.get().load(medicine.getImagePath()).into(holder.imageView);
 
-        holder.itemView.setOnClickListener(v -> {
+        // Используем Picasso для загрузки изображения из пути
+        Picasso.get()
+                .load(medicine.getImagePath())
+                .placeholder(R.drawable.placeholder) // Используйте ваш ресурс заполнителя
+                .error(R.drawable.error) // Используйте ваш ресурс ошибки
+                .into(holder.medicineImage);
+
+        holder.detailButton.setOnClickListener(v -> {
             Intent intent = new Intent(context, MedicineDetailActivity.class);
             intent.putExtra("medicine_id", medicine.getId());
             context.startActivity(intent);
@@ -51,17 +58,18 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
         return medicineList.size();
     }
 
-    static class MedicineViewHolder extends RecyclerView.ViewHolder {
+    public static class MedicineViewHolder extends RecyclerView.ViewHolder {
+        public TextView nameTextView;
+        public TextView descriptionTextView;
+        public ImageView medicineImage;
+        public Button detailButton;
 
-        TextView nameTextView;
-        TextView descriptionTextView;
-        ImageView imageView;
-
-        public MedicineViewHolder(@NonNull View itemView) {
-            super(itemView);
-            nameTextView = itemView.findViewById(R.id.nameTextView);
-            descriptionTextView = itemView.findViewById(R.id.descriptionTextView);
-            imageView = itemView.findViewById(R.id.imageView);
+        public MedicineViewHolder(View view) {
+            super(view);
+            nameTextView = view.findViewById(R.id.nameTextView);
+            descriptionTextView = view.findViewById(R.id.descriptionTextView);
+            medicineImage = view.findViewById(R.id.imageView);
+            detailButton = view.findViewById(R.id.detailButton);
         }
     }
 }
