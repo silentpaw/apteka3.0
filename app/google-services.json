@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "985780439865",
+    "project_id": "apteka-97695",
+    "storage_bucket": "apteka-97695.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985780439865:android:9ba53f5de26c01d533f6e8",
+        "android_client_info": {
+          "package_name": "com.example.apteka30"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtkJMhi8aZVm7ckRQ3gJbtUBYa6XJbWFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
