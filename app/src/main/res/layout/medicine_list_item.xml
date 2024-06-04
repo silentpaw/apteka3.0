@@ -25,10 +25,19 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp" />
 
+
     <Button
         android:id="@+id/detailButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Подробнее"
         android:layout_marginTop="8dp" />
+
+    <!-- Добавьте эту кнопку в разметку элемента списка -->
+    <Button
+        android:id="@+id/addToFavoritesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add to Favorites" />
+
 </LinearLayout>

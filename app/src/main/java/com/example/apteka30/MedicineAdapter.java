@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,10 +20,12 @@ import java.util.List;
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.MedicineViewHolder> {
     private List<Medicine> medicineList;
     private Context context;
+    private MedicineDatabaseHelper dbHelper;
 
     public MedicineAdapter(Context context, List<Medicine> medicineList) {
         this.context = context;
         this.medicineList = medicineList;
+        dbHelper = new MedicineDatabaseHelper(context);
     }
 
     @NonNull
@@ -51,6 +54,11 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
             intent.putExtra("medicine_id", medicine.getId());
             context.startActivity(intent);
         });
+
+        holder.addToFavoritesButton.setOnClickListener(v -> {
+            dbHelper.addMedicineToFavorites(medicine.getId());
+            Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override
@@ -63,6 +71,7 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
         public TextView descriptionTextView;
         public ImageView medicineImage;
         public Button detailButton;
+        public Button addToFavoritesButton;
 
         public MedicineViewHolder(View view) {
             super(view);
@@ -70,6 +79,8 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
             descriptionTextView = view.findViewById(R.id.descriptionTextView);
             medicineImage = view.findViewById(R.id.imageView);
             detailButton = view.findViewById(R.id.detailButton);
+            addToFavoritesButton = view.findViewById(R.id.addToFavoritesButton);
         }
     }
 }
+

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class MedicineDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "medicine.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3; // Обновили версию базы данных
 
     // Таблица для лекарств
     private static final String TABLE_MEDICINE = "medicine";
@@ -20,11 +20,10 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_DESCRIPTION = "description";
     private static final String COLUMN_IMAGE_PATH = "image_path";
 
-    // Таблица для последних просмотренных лекарств
-    private static final String TABLE_RECENTLY_VIEWED = "recently_viewed";
-    private static final String COLUMN_ID_RECENTLY_VIEWED = "_id"; // Уникальный идентификатор для таблицы "recently_viewed"
+    // Таблица для избранных лекарств
+    private static final String TABLE_FAVORITES = "favorites";
+    private static final String COLUMN_ID_FAVORITE = "_id";
     private static final String COLUMN_MEDICINE_ID = "medicine_id";
-    private static final int RECENTLY_VIEWED_LIMIT = 3;  // Лимит на количество последних просмотренных лекарств
 
     private Context context;
 
@@ -43,17 +42,17 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
                 + ")";
         db.execSQL(CREATE_MEDICINE_TABLE);
 
-        String CREATE_RECENTLY_VIEWED_TABLE = "CREATE TABLE " + TABLE_RECENTLY_VIEWED + "("
-                + COLUMN_ID_RECENTLY_VIEWED + " INTEGER PRIMARY KEY AUTOINCREMENT," // Уникальный идентификатор
+        String CREATE_FAVORITES_TABLE = "CREATE TABLE " + TABLE_FAVORITES + "("
+                + COLUMN_ID_FAVORITE + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_MEDICINE_ID + " INTEGER"
                 + ")";
-        db.execSQL(CREATE_RECENTLY_VIEWED_TABLE);
+        db.execSQL(CREATE_FAVORITES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICINE);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECENTLY_VIEWED);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_FAVORITES);
         onCreate(db);
     }
 
@@ -67,36 +66,18 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-
-    public void addRecentlyViewedMedicine(int medicineId) {
+    public void addMedicineToFavorites(int medicineId) {
         SQLiteDatabase db = this.getWritableDatabase();
-
-        // Проверяем, есть ли уже это лекарство в таблице
-        Cursor cursor = db.query(TABLE_RECENTLY_VIEWED, new String[]{COLUMN_MEDICINE_ID},
-                COLUMN_MEDICINE_ID + "=?", new String[]{String.valueOf(medicineId)}, null, null, null);
-
-        if (cursor.getCount() > 0) {
-            // Если лекарство уже существует в таблице, удаляем его
-            db.delete(TABLE_RECENTLY_VIEWED, COLUMN_MEDICINE_ID + "=?", new String[]{String.valueOf(medicineId)});
-        }
-
-        // Добавляем новое лекарство в таблицу
         ContentValues values = new ContentValues();
         values.put(COLUMN_MEDICINE_ID, medicineId);
-        db.insert(TABLE_RECENTLY_VIEWED, null, values);
-
-        // Удаляем лишние записи, чтобы оставалось только 3 последних просмотренных лекарства
-        String deleteQuery = "DELETE FROM " + TABLE_RECENTLY_VIEWED + " WHERE " + COLUMN_ID_RECENTLY_VIEWED + " NOT IN (SELECT " + COLUMN_ID_RECENTLY_VIEWED + " FROM " + TABLE_RECENTLY_VIEWED + " ORDER BY " + COLUMN_ID_RECENTLY_VIEWED + " DESC LIMIT " + RECENTLY_VIEWED_LIMIT + ")";
-        db.execSQL(deleteQuery);
-
-        cursor.close();
+        db.insert(TABLE_FAVORITES, null, values);
         db.close();
     }
 
-    public List<Medicine> getRecentlyViewedMedicines() {
+    public List<Medicine> getFavoriteMedicines() {
         List<Medicine> medicines = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_MEDICINE + " WHERE " + COLUMN_ID + " IN (SELECT " + COLUMN_MEDICINE_ID + " FROM " + TABLE_RECENTLY_VIEWED + " ORDER BY " + COLUMN_ID_RECENTLY_VIEWED + " DESC)";
+        String query = "SELECT * FROM " + TABLE_MEDICINE + " WHERE " + COLUMN_ID + " IN (SELECT " + COLUMN_MEDICINE_ID + " FROM " + TABLE_FAVORITES + ")";
         Cursor cursor = db.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
@@ -141,6 +122,7 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_MEDICINE, null, null);
         db.close();
     }
+
     public Medicine getMedicineById(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_MEDICINE, new String[] {COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_IMAGE_PATH},
@@ -159,7 +141,4 @@ public class MedicineDatabaseHelper extends SQLiteOpenHelper {
             return null;
         }
     }
-
 }
-
-

@@ -7,23 +7,32 @@
 
     <TextView
         android:id="@+id/userEmailTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp" />
+        android:text="User Email" />
 
     <Button
         android:id="@+id/logoutButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Logout"
         android:layout_marginTop="16dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recentlyViewedRecyclerView"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp" />
+        android:text="Favorite Medicines"
+        android:textSize="20sp"
+        android:layout_marginTop="24dp"
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favoritesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp" />
 
 </LinearLayout>
